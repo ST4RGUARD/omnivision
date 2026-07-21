@@ -1,6 +1,6 @@
 local M = {}
 
-local namespace = vim.api.nvim_create_namespace("omnivision")
+local namespace = vim.api.nvim_create_namespace("OmniVision")
 
 function M.show(bufnr, line, text)
 	return vim.api.nvim_buf_set_extmark(bufnr, namespace, line, -1, {
