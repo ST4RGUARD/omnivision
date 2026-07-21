@@ -34,7 +34,6 @@ end
 local function undo_last()
 	if not renderer.undo_last() then
 		vim.notify("No OmniVision results")
-		return
 	end
 end
 
@@ -78,6 +77,14 @@ local function eval_buffer()
 	renderer.render(buf, line, result.output)
 end
 
+local function undo_buffer()
+	local buf = vim.api.nvim_get_current_buf()
+
+	renderer.undo_buffer(buf)
+
+	vim.notify("OmniVision buffer cleared")
+end
+
 function M.setup()
 	vim.api.nvim_create_user_command("OmniVision", hello, {})
 
@@ -88,6 +95,8 @@ function M.setup()
 	vim.api.nvim_create_user_command("OmniVisionUndo", undo_last, {})
 
 	vim.api.nvim_create_user_command("OmniVisionClear", clear, {})
+
+	vim.api.nvim_create_user_command("OmniVisionUndoBuffer", undo_buffer, {})
 
 	vim.api.nvim_create_user_command("OmniVisionEvalLine", eval_line, {})
 

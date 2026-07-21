@@ -34,4 +34,9 @@ function M.clear()
 	state.clear()
 end
 
+function M.undo_buffer(bufnr)
+	extmarks.clear_buffer(bufnr)
+	state.remove_buffer(bufnr)
+end
+
 return M

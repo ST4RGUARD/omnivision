@@ -26,7 +26,7 @@ function M.get_buffer(bufnr)
 	return results
 end
 
-function M.clear_buffer(bufnr)
+function M.remove_buffer(bufnr)
 	local remaining = {}
 
 	for _, result in ipairs(M.results) do

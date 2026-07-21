@@ -29,9 +29,6 @@ function M.selection(opts)
 		return nil
 	end
 
-	local start_pos = vim.fn.getpos("'<")
-	local end_pos = vim.fn.getpos("'>")
-
 	local ctx = {
 		bufnr = vim.api.nvim_get_current_buf(),
 		start_line = opts.line1 - 1,
