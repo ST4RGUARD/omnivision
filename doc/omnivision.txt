@@ -1,0 +1,10 @@
+*omnivision.txt*
+
+OmniVision
+
+Instant inline evaluation for Neovim.
+
+COMMANDS:
+
+:OmniVision
+    Test OmniVision loading.
