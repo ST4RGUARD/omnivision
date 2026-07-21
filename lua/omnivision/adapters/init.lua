@@ -1,7 +1,7 @@
 local M = {}
 
 local adapters = {
-	fake = require("omnivision.adapters.fake"),
+	rust = require("omnivision.adapters.rust"),
 }
 
 function M.get(name)

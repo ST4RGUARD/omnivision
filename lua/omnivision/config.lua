@@ -5,9 +5,11 @@ M.defaults = {
 
 	virtual_text = true,
 
-	adapter = "fake",
+	adapter = "rust",
 
-	timeout = 1000,
+	runner = {
+		timeout = 1000,
+	},
 }
 
 M.options = {}
