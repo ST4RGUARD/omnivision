@@ -11,6 +11,10 @@ function M.show(bufnr, line, text)
 	})
 end
 
+function M.remove(bufnr, id)
+	vim.api.nvim_buf_del_extmark(bufnr, namespace, id)
+end
+
 function M.clear(bufnr)
 	vim.api.nvim_buf_clear_namespace(bufnr, namespace, 0, -1)
 end
