@@ -1,8 +1,7 @@
 local M = {}
 
-local state = require("omnivision.core.state")
-local extmarks = require("omnivision.core.extmarks")
 local evaluator = require("omnivision.core.evaluator")
+local renderer = require("omnivision.core.renderer")
 
 local function reload()
 	for module, _ in pairs(package.loaded) do
@@ -20,15 +19,8 @@ local function hello()
 	require("omnivision").hello()
 end
 
-local function test_virtual_text()
-	local buf = vim.api.nvim_get_current_buf()
-	local line = vim.api.nvim_win_get_cursor(0)[1] - 1
-
-	extmarks.show(buf, line, "=> OmniVision works!")
-end
-
 local function clear()
-	extmarks.clear_all()
+	renderer.clear()
 	vim.notify("OmniVision cleared")
 end
 
@@ -36,26 +28,14 @@ local function test_virtual_text()
 	local buf = vim.api.nvim_get_current_buf()
 	local line = vim.api.nvim_win_get_cursor(0)[1] - 1
 
-	local id = extmarks.show(buf, line, "=> OmniVision works!")
-
-	state.add({
-		bufnr = buf,
-		line = line,
-		extmark = id,
-	})
+	renderer.render(buf, line, "=> OmniVision works!")
 end
 
 local function undo_last()
-	local result = state.last()
-
-	if not result then
+	if not renderer.undo_last() then
 		vim.notify("No OmniVision results")
 		return
 	end
-
-	extmarks.remove(result.bufnr, result.extmark)
-
-	state.remove_last()
 end
 
 local function eval_line()
@@ -68,13 +48,7 @@ local function eval_line()
 	local buf = vim.api.nvim_get_current_buf()
 	local line = vim.api.nvim_win_get_cursor(0)[1] - 1
 
-	local id = extmarks.show(buf, line, result.output)
-
-	state.add({
-		bufnr = buf,
-		line = line,
-		extmark = id,
-	})
+	renderer.render(buf, line, result.output)
 end
 
 local function eval_selection(opts)
@@ -87,13 +61,7 @@ local function eval_selection(opts)
 	local buf = vim.api.nvim_get_current_buf()
 	local line = opts.line2 - 1
 
-	local id = extmarks.show(buf, line, result.output)
-
-	state.add({
-		bufnr = buf,
-		line = line,
-		extmark = id,
-	})
+	renderer.render(buf, line, result.output)
 end
 
 local function eval_buffer()
@@ -107,13 +75,7 @@ local function eval_buffer()
 
 	local line = vim.api.nvim_buf_line_count(buf) - 1
 
-	local id = extmarks.show(buf, line, result.output)
-
-	state.add({
-		bufnr = buf,
-		line = line,
-		extmark = id,
-	})
+	renderer.render(buf, line, result.output)
 end
 
 function M.setup()
