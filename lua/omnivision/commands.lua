@@ -77,6 +77,45 @@ local function eval_line()
 	})
 end
 
+local function eval_selection(opts)
+	local result = evaluator.selection(opts)
+
+	if not result then
+		return
+	end
+
+	local buf = vim.api.nvim_get_current_buf()
+	local line = opts.line2 - 1
+
+	local id = extmarks.show(buf, line, result.output)
+
+	state.add({
+		bufnr = buf,
+		line = line,
+		extmark = id,
+	})
+end
+
+local function eval_buffer()
+	local result = evaluator.buffer()
+
+	if not result then
+		return
+	end
+
+	local buf = vim.api.nvim_get_current_buf()
+
+	local line = vim.api.nvim_buf_line_count(buf) - 1
+
+	local id = extmarks.show(buf, line, result.output)
+
+	state.add({
+		bufnr = buf,
+		line = line,
+		extmark = id,
+	})
+end
+
 function M.setup()
 	vim.api.nvim_create_user_command("OmniVision", hello, {})
 
@@ -89,6 +128,10 @@ function M.setup()
 	vim.api.nvim_create_user_command("OmniVisionClear", clear, {})
 
 	vim.api.nvim_create_user_command("OmniVisionEvalLine", eval_line, {})
+
+	vim.api.nvim_create_user_command("OmniVisionEvalSelection", eval_selection, { range = true })
+
+	vim.api.nvim_create_user_command("OmniVisionEvalBuffer", eval_buffer, {})
 end
 
 M.setup()

@@ -22,7 +22,7 @@ function M.line()
 	return adapter.evaluate_line(ctx)
 end
 
-function M.selection()
+function M.selection(opts)
 	local adapter = get_adapter()
 
 	if not adapter then
@@ -34,10 +34,9 @@ function M.selection()
 
 	local ctx = {
 		bufnr = vim.api.nvim_get_current_buf(),
-		start_line = start_pos[2] - 1,
-		end_line = end_pos[2] - 1,
+		start_line = opts.line1 - 1,
+		end_line = opts.line2 - 1,
 	}
-
 	return adapter.evaluate_selection(ctx)
 end
 
