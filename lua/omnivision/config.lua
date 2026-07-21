@@ -5,7 +5,7 @@ M.defaults = {
 
 	virtual_text = true,
 
-	adapter = nil,
+	adapter = "fake",
 
 	timeout = 1000,
 }
