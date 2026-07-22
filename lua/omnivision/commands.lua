@@ -4,7 +4,7 @@ local evaluator = require("omnivision.core.evaluator")
 local renderer = require("omnivision.core.renderer")
 
 local function reload()
-	for module, _ in pairs(package.loaded) do
+	for module in pairs(package.loaded) do
 		if module:match("^omnivision") then
 			package.loaded[module] = nil
 		end
@@ -24,11 +24,12 @@ local function clear()
 	vim.notify("OmniVision cleared")
 end
 
-local function test_virtual_text()
+local function clear_buffer()
 	local buf = vim.api.nvim_get_current_buf()
-	local line = vim.api.nvim_win_get_cursor(0)[1] - 1
 
-	renderer.render(buf, line, "=> OmniVision works!")
+	renderer.clear_buffer(buf)
+
+	vim.notify("OmniVision buffer cleared")
 end
 
 local function undo_last()
@@ -37,52 +38,49 @@ local function undo_last()
 	end
 end
 
-local function eval_line()
-	local result = evaluator.line()
-
-	if not result then
-		return
-	end
-
+local function test_virtual_text()
 	local buf = vim.api.nvim_get_current_buf()
 	local line = vim.api.nvim_win_get_cursor(0)[1] - 1
 
-	renderer.render(buf, line, result.output)
+	renderer.render(buf, line, "=> OmniVision works!")
+end
+
+local function eval_line()
+	local result = evaluator.evaluate({
+		mode = "line",
+	})
+
+	if not result then
+		return
+	end
+
+	renderer.render_result(vim.api.nvim_get_current_buf(), result)
 end
 
 local function eval_selection(opts)
-	local result = evaluator.selection(opts)
+	local result = evaluator.evaluate({
+		mode = "selection",
+		line1 = opts.line1,
+		line2 = opts.line2,
+	})
 
 	if not result then
 		return
 	end
 
-	local buf = vim.api.nvim_get_current_buf()
-	local line = opts.line2 - 1
-
-	renderer.render(buf, line, result.output)
+	renderer.render_result(vim.api.nvim_get_current_buf(), result)
 end
 
 local function eval_buffer()
-	local result = evaluator.buffer()
+	local result = evaluator.evaluate({
+		mode = "buffer",
+	})
 
 	if not result then
 		return
 	end
 
-	local buf = vim.api.nvim_get_current_buf()
-
-	local line = vim.api.nvim_buf_line_count(buf) - 1
-
-	renderer.render(buf, line, result.output)
-end
-
-local function undo_buffer()
-	local buf = vim.api.nvim_get_current_buf()
-
-	renderer.undo_buffer(buf)
-
-	vim.notify("OmniVision buffer cleared")
+	renderer.render_result(vim.api.nvim_get_current_buf(), result)
 end
 
 function M.setup()
@@ -96,7 +94,7 @@ function M.setup()
 
 	vim.api.nvim_create_user_command("OmniVisionClear", clear, {})
 
-	vim.api.nvim_create_user_command("OmniVisionUndoBuffer", undo_buffer, {})
+	vim.api.nvim_create_user_command("OmniVisionClearBuffer", clear_buffer, {})
 
 	vim.api.nvim_create_user_command("OmniVisionEvalLine", eval_line, {})
 

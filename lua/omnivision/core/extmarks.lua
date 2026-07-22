@@ -25,4 +25,8 @@ function M.clear_buffer(bufnr)
 	vim.api.nvim_buf_clear_namespace(bufnr, namespace, 0, -1)
 end
 
+function M.namespace()
+	return namespace
+end
+
 return M

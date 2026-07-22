@@ -14,6 +14,18 @@ function M.remove_last()
 	table.remove(M.results)
 end
 
+function M.remove(id)
+	local remaining = {}
+
+	for _, result in ipairs(M.results) do
+		if result.extmark ~= id then
+			table.insert(remaining, result)
+		end
+	end
+
+	M.results = remaining
+end
+
 function M.get_buffer(bufnr)
 	local results = {}
 
