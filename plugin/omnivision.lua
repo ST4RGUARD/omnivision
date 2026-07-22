@@ -3,5 +3,3 @@ if vim.g.loaded_omnivision then
 end
 
 vim.g.loaded_omnivision = true
-
-require("omnivision.commands")

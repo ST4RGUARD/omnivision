@@ -21,7 +21,7 @@ function M.render_result(bufnr, result)
 	end
 
 	for _, observation in ipairs(result.observations or {}) do
-		M.render(bufnr, observation.line, observation.output)
+		M.render(bufnr, observation.line, observation.text)
 	end
 end
 

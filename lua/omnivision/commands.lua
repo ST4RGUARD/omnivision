@@ -21,6 +21,7 @@ end
 
 local function clear()
 	renderer.clear()
+
 	vim.notify("OmniVision cleared")
 end
 
@@ -46,41 +47,53 @@ local function test_virtual_text()
 end
 
 local function eval_line()
-	local result = evaluator.evaluate({
+	local buf = vim.api.nvim_get_current_buf()
+
+	evaluator.evaluate({
 		mode = "line",
-	})
+	}, function(result)
+		if not result or not result.success then
+			vim.notify("OmniVision evaluation failed", vim.log.levels.ERROR)
 
-	if not result then
-		return
-	end
+			return
+		end
 
-	renderer.render_result(vim.api.nvim_get_current_buf(), result)
+		renderer.render_result(buf, result)
+	end)
 end
 
 local function eval_selection(opts)
-	local result = evaluator.evaluate({
+	local buf = vim.api.nvim_get_current_buf()
+
+	evaluator.evaluate({
 		mode = "selection",
-		line1 = opts.line1,
-		line2 = opts.line2,
-	})
+		start_line = opts.line1 - 1,
+		end_line = opts.line2 - 1,
+	}, function(result)
+		if not result or not result.success then
+			vim.notify("OmniVision evaluation failed", vim.log.levels.ERROR)
 
-	if not result then
-		return
-	end
+			return
+		end
 
-	renderer.render_result(vim.api.nvim_get_current_buf(), result)
+		renderer.render_result(buf, result)
+	end)
 end
 
 local function eval_buffer()
-	local result = evaluator.evaluate({
+	local buf = vim.api.nvim_get_current_buf()
+
+	evaluator.evaluate({
 		mode = "buffer",
-	})
+	}, function(result)
+		if not result or not result.success then
+			vim.notify("OmniVision evaluation failed", vim.log.levels.ERROR)
 
-	if not result then
-		return
-	end
+			return
+		end
 
-	renderer.render_result(vim.api.nvim_get_current_buf(), result)
+		renderer.render_result(buf, result)
+	end)
 end
 
 function M.setup()
@@ -98,11 +111,11 @@ function M.setup()
 
 	vim.api.nvim_create_user_command("OmniVisionEvalLine", eval_line, {})
 
-	vim.api.nvim_create_user_command("OmniVisionEvalSelection", eval_selection, { range = true })
+	vim.api.nvim_create_user_command("OmniVisionEvalSelection", eval_selection, {
+		range = true,
+	})
 
 	vim.api.nvim_create_user_command("OmniVisionEvalBuffer", eval_buffer, {})
 end
-
-M.setup()
 
 return M

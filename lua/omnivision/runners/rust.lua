@@ -1,64 +1,101 @@
 local M = {}
 
-local uv = vim.loop
+local job = nil
+local callback = nil
 
-local function temp_name(ext)
-	local tmp = vim.fn.tempname()
-	return tmp .. ext
+local function runner_path()
+	local source = debug.getinfo(1, "S").source
+
+	source = source:sub(2)
+
+	local plugin_root = source:match("(.+)/lua/omnivision/runners")
+
+	return plugin_root .. "/lua/omnivision/runners/rust"
 end
 
-function M.evaluate(code)
-	local source = temp_name(".rs")
-	local binary = temp_name("")
-
-	local wrapped = string.format(
-		[[
-fn main() {
-	println!("{:?}", %s);
-}
-]],
-		code
-	)
-
-	local file = io.open(source, "w")
-
-	if not file then
-		return {
-			success = false,
-			output = "failed to create temp file",
-		}
+function M.start()
+	if job then
+		return
 	end
 
-	file:write(wrapped)
-	file:close()
+	local runner = runner_path()
 
-	local compile = vim.fn.system({
-		"rustc",
-		source,
-		"-o",
-		binary,
+	vim.notify("Starting Rust runner: " .. runner)
+
+	job = vim.fn.jobstart({
+		"cargo",
+		"run",
+		"--quiet",
+	}, {
+		cwd = runner,
+
+		on_stdout = function(_, data)
+			if not data then
+				return
+			end
+
+			for _, line in ipairs(data) do
+				if line ~= "" then
+					local ok, response = pcall(vim.json.decode, line)
+
+					if ok then
+						if callback then
+							callback(response)
+							callback = nil
+						end
+					else
+						vim.notify("Invalid runner response: " .. line, vim.log.levels.ERROR)
+					end
+				end
+			end
+		end,
+
+		on_stderr = function(_, data)
+			if not data then
+				return
+			end
+
+			for _, line in ipairs(data) do
+				if line ~= "" then
+					vim.notify("runner: " .. line, vim.log.levels.INFO)
+				end
+			end
+		end,
+
+		on_exit = function()
+			job = nil
+			callback = nil
+		end,
 	})
 
-	if vim.v.shell_error ~= 0 then
-		return {
-			success = false,
-			output = compile,
-		}
+	if job <= 0 then
+		job = nil
+		error("Failed to start OmniVision Rust runner")
 	end
 
-	local output = vim.fn.system(binary)
+	vim.notify("OmniVision Rust runner started")
+end
 
-	if vim.v.shell_error ~= 0 then
-		return {
-			success = false,
-			output = output,
-		}
+function M.stop()
+	if job then
+		vim.fn.jobstop(job)
+		job = nil
+		callback = nil
+	end
+end
+
+function M.send(payload, cb)
+	if not job then
+		error("Rust runner is not running")
 	end
 
-	return {
-		success = true,
-		output = "=> " .. vim.trim(output),
-	}
+	callback = cb
+
+	local json = vim.json.encode(payload)
+
+	print("SEND:", json)
+
+	vim.fn.chansend(job, json .. "\n")
 end
 
 return M
