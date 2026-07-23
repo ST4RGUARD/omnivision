@@ -3,6 +3,8 @@ use std::io::{self, BufRead, Write};
 
 #[derive(Debug, Deserialize)]
 struct Request {
+    id: u64,
+
     language: String,
     mode: String,
     code: String,
@@ -20,11 +22,14 @@ struct Request {
 #[derive(Debug, Serialize)]
 struct Observation {
     line: usize,
+    kind: String,
     text: String,
 }
 
 #[derive(Debug, Serialize)]
 struct Response {
+    id: u64,
+
     success: bool,
     observations: Vec<Observation>,
     error: Option<String>,
@@ -44,6 +49,7 @@ fn main() {
 
             Err(err) => {
                 let response = Response {
+                    id: 0,
                     success: false,
                     observations: vec![],
                     error: Some(format!("invalid json: {}", err)),
@@ -67,15 +73,16 @@ fn main() {
         };
 
         let response = Response {
+            id: request.id,
+
             success: true,
 
             observations: vec![Observation {
                 line: observation_line,
 
-                text: format!(
-                    "Rust runner received {} {}: {}",
-                    request.language, request.mode, request.code
-                ),
+                kind: "info".to_string(),
+
+                text: format!("evaluated {} bytes", request.code.len()),
             }],
 
             error: None,

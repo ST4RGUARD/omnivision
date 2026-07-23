@@ -3,12 +3,23 @@ local state = require("omnivision.core.state")
 
 local M = {}
 
-function M.render(bufnr, line, output)
-	local id = extmarks.show(bufnr, line, output)
+function M.render(bufnr, line, output, kind)
+	local highlight = "Comment"
+
+	if kind == "error" then
+		highlight = "ErrorMsg"
+	elseif kind == "value" then
+		highlight = "String"
+	elseif kind == "type" then
+		highlight = "Type"
+	end
+
+	local id = extmarks.show(bufnr, line, output, highlight)
 
 	state.add({
 		bufnr = bufnr,
 		line = line,
+		kind = kind or "info",
 		extmark = id,
 	})
 
@@ -21,7 +32,7 @@ function M.render_result(bufnr, result)
 	end
 
 	for _, observation in ipairs(result.observations or {}) do
-		M.render(bufnr, observation.line, observation.text)
+		M.render(bufnr, observation.line, observation.text, observation.kind)
 	end
 end
 

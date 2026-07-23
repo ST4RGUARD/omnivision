@@ -1,7 +1,7 @@
 local M = {}
 
 local job = nil
-local callback = nil
+local queue = require("omnivision.core.queue")
 
 local function runner_path()
 	local source = debug.getinfo(1, "S").source
@@ -29,6 +29,8 @@ function M.start()
 	}, {
 		cwd = runner,
 
+		stdout_buffered = false,
+
 		on_stdout = function(_, data)
 			if not data then
 				return
@@ -38,14 +40,15 @@ function M.start()
 				if line ~= "" then
 					local ok, response = pcall(vim.json.decode, line)
 
-					if ok then
-						if callback then
-							callback(response)
-							callback = nil
-						end
-					else
+					if not ok then
 						vim.notify("Invalid runner response: " .. line, vim.log.levels.ERROR)
+
+						goto continue
 					end
+
+					queue.resolve(response.id, response)
+
+					::continue::
 				end
 			end
 		end,
@@ -64,7 +67,7 @@ function M.start()
 
 		on_exit = function()
 			job = nil
-			callback = nil
+			queue.clear()
 		end,
 	})
 
@@ -80,8 +83,9 @@ function M.stop()
 	if job then
 		vim.fn.jobstop(job)
 		job = nil
-		callback = nil
 	end
+
+	queue.clear()
 end
 
 function M.send(payload, cb)
@@ -89,11 +93,13 @@ function M.send(payload, cb)
 		error("Rust runner is not running")
 	end
 
-	callback = cb
+	local id = queue.create(payload.bufnr, cb)
+
+	payload.id = id
 
 	local json = vim.json.encode(payload)
 
-	print("SEND:", json)
+	vim.notify("OmniVision request " .. payload.id, vim.log.levels.DEBUG)
 
 	vim.fn.chansend(job, json .. "\n")
 end

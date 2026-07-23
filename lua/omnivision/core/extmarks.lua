@@ -2,12 +2,16 @@ local M = {}
 
 local namespace = vim.api.nvim_create_namespace("OmniVision")
 
-function M.show(bufnr, line, text)
-	return vim.api.nvim_buf_set_extmark(bufnr, namespace, line, -1, {
-		virt_text = {
-			{ text, "Comment" },
+function M.show(bufnr, line, text, highlight)
+	return vim.api.nvim_buf_set_extmark(bufnr, namespace, line, 0, {
+		virt_lines = {
+			{
+				{
+					text,
+					highlight or "Comment",
+				},
+			},
 		},
-		virt_text_pos = "eol",
 	})
 end
 
@@ -23,10 +27,6 @@ end
 
 function M.clear_buffer(bufnr)
 	vim.api.nvim_buf_clear_namespace(bufnr, namespace, 0, -1)
-end
-
-function M.namespace()
-	return namespace
 end
 
 return M
