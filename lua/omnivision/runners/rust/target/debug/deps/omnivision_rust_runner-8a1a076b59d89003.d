@@ -1,8 +1,9 @@
-/Users/jarjohns/git/omnivision/lua/omnivision/runners/rust/target/debug/deps/omnivision_rust_runner-8a1a076b59d89003.d: src/main.rs Cargo.toml
+/Users/jarjohns/git/omnivision/lua/omnivision/runners/rust/target/debug/deps/omnivision_rust_runner-8a1a076b59d89003.d: src/main.rs src/evaluator.rs Cargo.toml
 
-/Users/jarjohns/git/omnivision/lua/omnivision/runners/rust/target/debug/deps/libomnivision_rust_runner-8a1a076b59d89003.rmeta: src/main.rs Cargo.toml
+/Users/jarjohns/git/omnivision/lua/omnivision/runners/rust/target/debug/deps/libomnivision_rust_runner-8a1a076b59d89003.rmeta: src/main.rs src/evaluator.rs Cargo.toml
 
 src/main.rs:
+src/evaluator.rs:
 Cargo.toml:
 
 # env-dep:CLIPPY_ARGS=--no-deps__CLIPPY_HACKERY__

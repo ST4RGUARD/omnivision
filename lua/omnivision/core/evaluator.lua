@@ -1,5 +1,6 @@
 local adapters = require("omnivision.adapters")
 local config = require("omnivision.config")
+local languages = require("omnivision.languages")
 
 local M = {}
 
@@ -40,6 +41,12 @@ end
 
 function M.evaluate(ctx, callback)
 	ctx = build_context(ctx)
+
+	local language = languages.get(ctx.filetype)
+
+	if language then
+		ctx.language = language
+	end
 
 	local adapter = adapters.get(config.options.adapter)
 

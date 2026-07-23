@@ -1,35 +1,39 @@
 use serde::{Deserialize, Serialize};
 use std::io::{self, BufRead, Write};
+mod evaluator;
 
 #[derive(Debug, Deserialize)]
-struct Request {
-    id: u64,
+pub struct Request {
+    pub id: usize,
 
-    language: String,
-    mode: String,
-    code: String,
-
-    #[serde(default)]
-    cursor_line: usize,
+    pub language: String,
+    pub mode: String,
+    pub code: String,
+    pub filename: String,
 
     #[serde(default)]
-    start_line: usize,
+    pub context: String,
 
     #[serde(default)]
-    end_line: usize,
+    pub cursor_line: usize,
+
+    #[serde(default)]
+    pub start_line: usize,
+
+    #[serde(default)]
+    pub end_line: usize,
 }
 
 #[derive(Debug, Serialize)]
-struct Observation {
-    line: usize,
-    kind: String,
-    text: String,
+pub struct Observation {
+    pub line: usize,
+    pub kind: String,
+    pub text: String,
 }
 
 #[derive(Debug, Serialize)]
-struct Response {
-    id: u64,
-
+pub struct Response {
+    id: usize,
     success: bool,
     observations: Vec<Observation>,
     error: Option<String>,
@@ -62,29 +66,10 @@ fn main() {
             }
         };
 
-        let observation_line = match request.mode.as_str() {
-            "line" => request.cursor_line,
-
-            "selection" => request.end_line,
-
-            "buffer" => request.start_line,
-
-            _ => 0,
-        };
-
         let response = Response {
             id: request.id,
-
             success: true,
-
-            observations: vec![Observation {
-                line: observation_line,
-
-                kind: "info".to_string(),
-
-                text: format!("evaluated {} bytes", request.code.len()),
-            }],
-
+            observations: evaluator::evaluate(&request),
             error: None,
         };
 

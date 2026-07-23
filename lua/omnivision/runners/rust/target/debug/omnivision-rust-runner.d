@@ -1,1 +1,1 @@
-/Users/jarjohns/git/omnivision/lua/omnivision/runners/rust/target/debug/omnivision-rust-runner: /Users/jarjohns/git/omnivision/lua/omnivision/runners/rust/src/main.rs
+/Users/jarjohns/git/omnivision/lua/omnivision/runners/rust/target/debug/omnivision-rust-runner: /Users/jarjohns/git/omnivision/lua/omnivision/runners/rust/src/evaluator.rs /Users/jarjohns/git/omnivision/lua/omnivision/runners/rust/src/main.rs
