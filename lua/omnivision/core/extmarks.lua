@@ -3,15 +3,21 @@ local M = {}
 local namespace = vim.api.nvim_create_namespace("OmniVision")
 
 function M.show(bufnr, line, text, highlight)
-	return vim.api.nvim_buf_set_extmark(bufnr, namespace, line, 0, {
-		virt_lines = {
+	local lines = vim.split(text, "\n")
+
+	local virt_lines = {}
+
+	for _, item in ipairs(lines) do
+		table.insert(virt_lines, {
 			{
-				{
-					text,
-					highlight or "Comment",
-				},
+				item,
+				highlight or "Comment",
 			},
-		},
+		})
+	end
+
+	return vim.api.nvim_buf_set_extmark(bufnr, namespace, line, 0, {
+		virt_lines = virt_lines,
 	})
 end
 

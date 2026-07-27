@@ -9,10 +9,14 @@ pub struct Request {
     pub language: String,
     pub mode: String,
     pub code: String,
+
+    #[serde(default)]
+    pub kind: String,
+
     pub filename: String,
 
     #[serde(default)]
-    pub context: String,
+    pub contexts: Vec<String>,
 
     #[serde(default)]
     pub cursor_line: usize,

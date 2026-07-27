@@ -3,10 +3,20 @@ local runner = require("omnivision.runners.rust")
 local M = {}
 
 function M.evaluate(ctx, callback)
-	local extracted_context = ""
+	local contexts = {}
 
-	if ctx.language then
-		extracted_context = ctx.language.extract_context(ctx) or ""
+	if ctx.language and ctx.language.extract_contexts then
+		contexts = ctx.language.extract_contexts(ctx)
+
+		print("RUST CONTEXTS:")
+		for i, c in ipairs(contexts) do
+			print("CONTEXT " .. i)
+			print(c)
+		end
+	end
+
+	if #contexts == 0 then
+		contexts = { "" }
 	end
 
 	runner.send({
@@ -17,7 +27,9 @@ function M.evaluate(ctx, callback)
 
 		code = ctx.code or "",
 
-		context = extracted_context,
+		kind = ctx.language and ctx.language.classify(ctx, contexts) or "expression",
+
+		contexts = contexts,
 
 		start_line = ctx.start_line,
 		end_line = ctx.end_line,
