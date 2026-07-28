@@ -15,6 +15,14 @@ local function build_context(ctx)
 
 	ctx.cursor_line = vim.api.nvim_win_get_cursor(0)[1] - 1
 
+	if ctx.mode == "buffer" then
+		ctx.cursor_line = vim.api.nvim_buf_line_count(buf) - 1
+	end
+
+	if ctx.mode == "selection" then
+		ctx.cursor_line = ctx.end_line or ctx.cursor_line
+	end
+
 	ctx.start_line = ctx.start_line or 0
 
 	ctx.end_line = ctx.end_line or vim.api.nvim_buf_line_count(buf) - 1
@@ -48,10 +56,16 @@ function M.evaluate(ctx, callback)
 		ctx.language = language
 	end
 
-	local adapter = adapters.get(config.options.adapter)
+	local adapter_name = config.options.adapter
+
+	if adapter_name == "auto" then
+		adapter_name = ctx.filetype
+	end
+
+	local adapter = adapters.get(adapter_name)
 
 	if not adapter then
-		vim.notify("No OmniVision adapter: " .. tostring(config.options.adapter))
+		vim.notify("No OmniVision adapter: " .. tostring(adapter_name))
 
 		return
 	end

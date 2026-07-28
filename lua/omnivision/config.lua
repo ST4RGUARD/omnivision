@@ -5,7 +5,7 @@ M.defaults = {
 
 	virtual_text = true,
 
-	adapter = "rust",
+	adapter = "auto",
 
 	runner = {
 		timeout = 1000,

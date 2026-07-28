@@ -1,9 +1,11 @@
 local rust = require("omnivision.languages.rust")
+local python = require("omnivision.languages.python")
 
 local M = {}
 
 local languages = {
 	rust,
+	python,
 }
 
 function M.get(filetype)

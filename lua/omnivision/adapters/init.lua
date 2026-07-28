@@ -2,6 +2,7 @@ local M = {}
 
 local adapters = {
 	rust = require("omnivision.adapters.rust"),
+	python = require("omnivision.adapters.python"),
 }
 
 function M.get(name)
