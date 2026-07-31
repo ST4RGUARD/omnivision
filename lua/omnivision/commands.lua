@@ -15,10 +15,6 @@ local function reload()
 	vim.notify("OmniVision reloaded")
 end
 
-local function hello()
-	require("omnivision").hello()
-end
-
 local function clear()
 	renderer.clear()
 
@@ -96,8 +92,14 @@ local function eval_buffer()
 	end)
 end
 
+local runners = require("omnivision.runners")
+
+local function toggle_runner()
+	runners.toggle()
+end
+
 function M.setup()
-	vim.api.nvim_create_user_command("OmniVision", hello, {})
+	vim.api.nvim_create_user_command("OmniVisionToggleRunner", toggle_runner, {})
 
 	vim.api.nvim_create_user_command("OmniVisionReload", reload, {})
 

@@ -41,7 +41,7 @@ function M.start()
 					local ok, response = pcall(vim.json.decode, line)
 
 					if not ok then
-						vim.notify("Invalid runner response: " .. line, vim.log.levels.ERROR)
+						vim.notify("Invalid Rust runner response: " .. line, vim.log.levels.ERROR)
 
 						goto continue
 					end
@@ -60,7 +60,7 @@ function M.start()
 
 			for _, line in ipairs(data) do
 				if line ~= "" then
-					vim.notify("runner: " .. line, vim.log.levels.INFO)
+					vim.notify("rust runner: " .. line, vim.log.levels.INFO)
 				end
 			end
 		end,
@@ -88,9 +88,29 @@ function M.stop()
 	queue.clear()
 end
 
+function M.is_running()
+	return job ~= nil
+end
+
+function M.toggle()
+	if M.is_running() then
+		M.stop()
+		vim.notify("OmniVision Rust runner stopped")
+	else
+		M.start()
+	end
+end
+
+function M.status()
+	return {
+		running = job ~= nil,
+		job = job,
+	}
+end
+
 function M.send(payload, cb)
 	if not job then
-		error("Rust runner is not running")
+		M.start()
 	end
 
 	local id = queue.create(payload.bufnr, cb)
@@ -99,7 +119,7 @@ function M.send(payload, cb)
 
 	local json = vim.json.encode(payload)
 
-	vim.notify("OmniVision request " .. payload.id, vim.log.levels.DEBUG)
+	vim.notify("OmniVision Rust request " .. payload.id, vim.log.levels.DEBUG)
 
 	vim.fn.chansend(job, json .. "\n")
 end

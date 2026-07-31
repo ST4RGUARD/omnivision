@@ -43,7 +43,6 @@ function M.start()
 
 					if not ok then
 						vim.notify("Invalid Python runner response: " .. line, vim.log.levels.ERROR)
-
 						goto continue
 					end
 
@@ -89,9 +88,29 @@ function M.stop()
 	queue.clear()
 end
 
+function M.is_running()
+	return job ~= nil
+end
+
+function M.toggle()
+	if M.is_running() then
+		M.stop()
+		vim.notify("OmniVision Python runner stopped")
+	else
+		M.start()
+	end
+end
+
+function M.status()
+	return {
+		running = job ~= nil,
+		job = job,
+	}
+end
+
 function M.send(payload, cb)
 	if not job then
-		error("Python runner is not running")
+		M.start()
 	end
 
 	local id = queue.create(payload.bufnr, cb)
