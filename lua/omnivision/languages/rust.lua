@@ -67,24 +67,23 @@ end
 local function extract_scoped_context(ctx, start_line)
 	local context = {}
 
-	local stop_line = ctx.cursor_line + 1
+	local stop_line = ctx.cursor_line
 
 	if ctx.mode == "selection" then
-		stop_line = ctx.end_line + 1
+		stop_line = ctx.start_line
 	end
 
-	for i = start_line + 1, stop_line - 1 do
+	for i = start_line + 1, stop_line do
 		local line = ctx.lines[i]
 
 		if line then
 			local trimmed = line:gsub("^%s+", "")
 
-			-- Keep variable setup and simple statements.
 			if
 				trimmed:match("^let%s+")
 				or trimmed:match("^const%s+")
 				or trimmed:match("^static%s+")
-				or trimmed:match("^println!")
+				or trimmed:match("^use%s+")
 				or trimmed:match("^%w+%s*=")
 			then
 				table.insert(context, line)
