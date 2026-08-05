@@ -52,8 +52,6 @@ function M.extract_contexts(ctx)
 
 	local lines = ctx.lines
 
-	-- Context 1:
-	-- Current function/class block
 	local block_start = find_block_start(lines, ctx.cursor_line)
 
 	if block_start then
@@ -62,8 +60,6 @@ function M.extract_contexts(ctx)
 		table.insert(contexts, table.concat(block, "\n"))
 	end
 
-	-- Context 2:
-	-- Top level definitions and imports before cursor
 	local top_level = {}
 
 	local i = 1
@@ -71,11 +67,8 @@ function M.extract_contexts(ctx)
 	while i <= ctx.cursor_line + 1 do
 		local line = lines[i]
 
-		-- imports
 		if line:match("^%s*import%s+") or line:match("^%s*from%s+") then
 			table.insert(top_level, line)
-
-		-- functions/classes
 		elseif line:match("^%s*def%s+") or line:match("^%s*class%s+") then
 			local block = extract_block(lines, i)
 
@@ -84,8 +77,6 @@ function M.extract_contexts(ctx)
 			end
 
 			i = i + #block - 1
-
-		-- simple top-level statements
 		elseif is_top_level(line) and line:match("%S") and not line:match("^%s*return%s+") then
 			table.insert(top_level, line)
 		end
@@ -150,6 +141,29 @@ function M.classify(ctx, contexts)
 	end
 
 	return "expression"
+end
+
+function M.build_request(ctx)
+	local contexts = M.extract_contexts(ctx)
+
+	return {
+		bufnr = ctx.bufnr,
+
+		language = ctx.filetype or "python",
+		mode = ctx.mode,
+
+		code = ctx.code or "",
+
+		kind = M.classify(ctx, contexts),
+
+		contexts = contexts,
+
+		start_line = ctx.start_line,
+		end_line = ctx.end_line,
+		cursor_line = ctx.cursor_line,
+
+		filename = ctx.filename,
+	}
 end
 
 return M
