@@ -4,6 +4,13 @@ function M.can_handle(filetype)
 	return filetype == "rust"
 end
 
+local function is_function_start(line)
+	return line:match("^%s*fn%s+")
+		or line:match("^%s*pub%s+fn%s+")
+		or line:match("^%s*async%s+fn%s+")
+		or line:match("^%s*pub%s+async%s+fn%s+")
+end
+
 local function find_function(lines, cursor_line)
 	local start_line = nil
 	local depth = 0
@@ -12,12 +19,10 @@ local function find_function(lines, cursor_line)
 	for i = 1, #lines do
 		local line = lines[i]
 
-		if not start_line then
-			if line:match("^%s*fn%s+") or line:match("^%s*async%s+fn%s+") then
-				start_line = i
-				depth = 0
-				started = false
-			end
+		if not start_line and is_function_start(line) then
+			start_line = i
+			depth = 0
+			started = false
 		end
 
 		if start_line then
@@ -34,42 +39,79 @@ local function find_function(lines, cursor_line)
 				local end_line = i
 
 				if cursor_line + 1 >= start_line and cursor_line + 1 <= end_line then
-					local block = {}
-
-					for j = start_line, end_line do
-						table.insert(block, lines[j])
-					end
-
-					return table.concat(block, "\n")
+					return start_line, end_line
 				end
 
 				start_line = nil
+				depth = 0
+				started = false
 			end
 		end
 	end
 
-	return nil
+	return nil, nil
 end
 
-function M.extract_contexts(ctx)
-	local contexts = {}
-
+local function extract_imports(lines)
 	local imports = {}
 
-	for _, line in ipairs(ctx.lines) do
+	for _, line in ipairs(lines) do
 		if line:match("^%s*use%s+") then
 			table.insert(imports, line)
 		end
 	end
 
+	return imports
+end
+
+local function extract_scoped_context(ctx, start_line)
+	local context = {}
+
+	local stop_line = ctx.cursor_line + 1
+
+	if ctx.mode == "selection" then
+		stop_line = ctx.end_line + 1
+	end
+
+	for i = start_line + 1, stop_line - 1 do
+		local line = ctx.lines[i]
+
+		if line then
+			local trimmed = line:gsub("^%s+", "")
+
+			-- Keep variable setup and simple statements.
+			if
+				trimmed:match("^let%s+")
+				or trimmed:match("^const%s+")
+				or trimmed:match("^static%s+")
+				or trimmed:match("^println!")
+				or trimmed:match("^%w+%s*=")
+			then
+				table.insert(context, line)
+			end
+		end
+	end
+
+	return context
+end
+
+function M.extract_contexts(ctx)
+	local contexts = {}
+
+	local imports = extract_imports(ctx.lines)
+
 	if #imports > 0 then
 		table.insert(contexts, table.concat(imports, "\n"))
 	end
 
-	local function_block = find_function(ctx.lines, ctx.cursor_line)
+	local start_line, end_line = find_function(ctx.lines, ctx.cursor_line)
 
-	if function_block then
-		table.insert(contexts, function_block)
+	if start_line and end_line then
+		local scoped = extract_scoped_context(ctx, start_line)
+
+		if #scoped > 0 then
+			table.insert(contexts, table.concat(scoped, "\n"))
+		end
 	end
 
 	print("RUST CONTEXTS:")
@@ -84,6 +126,7 @@ end
 
 function M.extract_context(ctx)
 	local contexts = M.extract_contexts(ctx)
+
 	return contexts[1]
 end
 
@@ -97,7 +140,12 @@ function M.classify(ctx)
 		return "program"
 	end
 
-	if code:match("^fn%s+") or code:match("^async%s+fn%s+") then
+	if
+		code:match("^fn%s+")
+		or code:match("^pub%s+fn%s+")
+		or code:match("^async%s+fn%s+")
+		or code:match("^pub%s+async%s+fn%s+")
+	then
 		return "function"
 	end
 

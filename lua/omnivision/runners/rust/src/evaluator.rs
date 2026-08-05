@@ -186,9 +186,9 @@ fn main() {{
             } else {
                 format!(
                     r#"
-{context}
-
 fn main() {{
+    {context}
+
     println!("--- OMNIVISION RESULT START ---");
 
     {code}
