@@ -148,7 +148,15 @@ function M.classify(ctx)
 		return "function"
 	end
 
-	if code:match("^let%s+") then
+	if code:match("^let%s+") or code:match("^const%s+") or code:match("^static%s+") then
+		return "statement"
+	end
+
+	if code:match("^println!") or code:match("^dbg!") or code:match("^%w+%s*%(") or code:match("^%w+%.%w+%(") then
+		return "statement"
+	end
+
+	if code:match("^%w+%s*=") or code:match("^%w+%s*[+%-*/]=") then
 		return "statement"
 	end
 
