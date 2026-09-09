@@ -167,7 +167,6 @@ fn main() {{
 
     {code}
 
-    println!("--- OMNIVISION EXECUTED ---");
 }}
 "#,
                 context = context,

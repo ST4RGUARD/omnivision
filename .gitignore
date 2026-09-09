@@ -1,2 +1,6 @@
+<<<<<<< HEAD
 lua/omnivision/runners/rust/target/debug/
 lua/omnivision/runners/python/__pycache__/
+=======
+lua/omnivision/runners/rust/target/
+>>>>>>> 073a73c85ceec6b866c90fadb53803476f6a2e45
